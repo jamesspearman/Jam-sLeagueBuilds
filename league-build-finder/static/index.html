@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jam's League Builds</title>
+<link rel="icon" href="/logo.png">
+<style>
+  :root {
+    --bg: #1a1420; --panel: #241b2b; --panel2: #2a2032; --panel3: #33283c; --top: #141017;
+    --line: #3a2d43; --line2: #4b3c55; --curve: #8a7c92;
+    --text: #f1eaf4; --muted: #a395ab; --dim: #6f6377; --accent: #f2b8e6; --accent2: #b896ff;
+    --warn-bg: #33261a; --warn: #f3c77a; --bad: #f08a7a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; color: var(--text); font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+         background: radial-gradient(1200px 500px at 30% -10%, #3d2c45 0%, transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; }
+  button, select { font: inherit; color: inherit; }
+  a { color: var(--accent); }
+
+  /* ---------- search bar ---------- */
+  .bar { position: sticky; top: 0; z-index: 10; background: rgba(20,16,23,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .bar-in { max-width: 1180px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .brand { display: flex; align-items: center; gap: 9px; margin-right: 6px; align-self: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field > span { font-size: 10px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .seg { display: flex; border: 1px solid var(--line2); border-radius: 8px; overflow: hidden; }
+  .seg button { background: var(--panel2); border: 0; border-right: 1px solid var(--line2); padding: 6px 10px; cursor: pointer; color: var(--muted); font-weight: 600; }
+  .seg button:last-child { border-right: 0; }
+  .seg button:hover { color: var(--text); }
+  .seg button.on { background: #4a3555; color: var(--accent); }
+  select { background: var(--panel2); border: 1px solid var(--line2); border-radius: 8px; padding: 6px 10px; }
+  #champion { min-width: 160px; } #region { min-width: 110px; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding-bottom: 7px; }
+  .go { background: linear-gradient(180deg, #c58bf0, #9a62d6); color: #1a0f22; border: 0; border-radius: 8px; padding: 7px 22px; font-weight: 800; cursor: pointer; }
+  .go:disabled { opacity: .5; cursor: default; }
+
+  /* ---------- page layout ---------- */
+  .page { max-width: 1180px; margin: 0 auto; padding: 28px 16px 60px; display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 36px; }
+  nav.side { position: sticky; top: 90px; align-self: start; display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+  nav.side a { color: var(--muted); text-decoration: none; font-size: 12px; padding: 5px 10px; border-left: 2px solid transparent; cursor: pointer; }
+  nav.side a:hover { color: var(--text); }
+  nav.side a.on { color: var(--text); border-left-color: var(--accent); }
+  @media (max-width: 860px) { .page { grid-template-columns: 1fr; } nav.side { display: none; } }
+  #out { min-width: 0; }
+  .msg { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; color: var(--muted); }
+  .msg.err { color: var(--bad); border-color: #5a2f33; }
+  details { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  h2.sec { font-size: 24px; margin: 40px 0 14px; letter-spacing: -.3px; scroll-margin-top: 90px; }
+
+  /* ---------- header ---------- */
+  .head { display: flex; gap: 16px; align-items: center; scroll-margin-top: 90px; }
+  .portrait { width: 76px; height: 76px; border-radius: 12px; border: 2px solid #8f6ea0; box-shadow: 0 0 0 4px rgba(242,184,230,.08), 0 8px 30px rgba(0,0,0,.4); overflow: hidden; flex: none; position: relative; background: var(--panel3); }
+  .kicker { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .head h1 { margin: 2px 0 2px; font-size: 28px; line-height: 1.15; letter-spacing: -.3px; }
+  .head .subl { color: var(--muted); font-size: 13px; }
+  .head .subl b { color: var(--text); font-weight: 600; }
+  .flag { margin-top: 16px; background: var(--warn-bg); border: 1px solid #5c4628; color: var(--warn); padding: 10px 14px; border-radius: 10px; font-size: 13px; }
+  .note { margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+  /* ---------- icons ---------- */
+  .ico { position: relative; width: 48px; height: 48px; border-radius: 9px; border: 1px solid var(--line2); background: var(--panel3); overflow: hidden; flex: none; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
+  .ico img { width: 100%; height: 100%; display: block; position: relative; }
+  .ico .fb { position: absolute; inset: 0; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--muted); text-align: center; }
+  .ico.sm { width: 36px; height: 36px; border-radius: 7px; }
+
+  /* ---------- build panel ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .strip { background: var(--top); display: grid; grid-template-columns: auto auto 1fr; border-bottom: 1px solid var(--line); }
+  .strip > div { padding: 18px 22px; border-right: 1px solid var(--line); min-width: 0; }
+  .strip > div:last-child { border-right: 0; }
+  @media (max-width: 760px) { .strip { grid-template-columns: 1fr; } .strip > div { border-right: 0; border-bottom: 1px solid var(--line); } }
+  .lbl { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 9px; }
+  .icons { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .icons .gt { color: var(--dim); font-size: 16px; margin: 0 2px; }
+  .tiny { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.35; max-width: 320px; }
+  .numwrap { position: relative; }
+  .num { position: absolute; top: -6px; left: -6px; z-index: 2; background: var(--accent); color: #2a1029; font-size: 10px; font-weight: 800; width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); background: var(--panel2); }
+  .tabs button { background: none; border: 0; border-right: 1px solid var(--line); padding: 11px 22px; color: var(--muted); font-weight: 700; cursor: pointer; }
+  .tabs button.on { color: var(--accent); background: var(--panel); box-shadow: inset 0 -2px 0 var(--accent); }
+  .tabbody { padding: 10px 18px 18px; }
+
+  /* ---------- flow graph ---------- */
+  .gwrap { overflow-x: auto; }
+  .graph { position: relative; height: 380px; min-width: 660px; }
+  .graph svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .graph path { fill: none; stroke: var(--curve); stroke-width: 1.6; vector-effect: non-scaling-stroke; opacity: .85; }
+  .gn { position: absolute; transform: translate(-50%, -30px); display: flex; flex-direction: column; align-items: center; width: 110px; text-align: center; }
+  .gn .ico { width: 60px; height: 60px; border-radius: 11px; }
+  .gn .nm { font-size: 11px; margin-top: 6px; line-height: 1.25; }
+  .gn .sub { font-size: 10px; color: var(--muted); }
+  .gn .cat { position: absolute; top: -18px; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent2); font-weight: 800; white-space: nowrap; }
+  .gn.comp { transform: translate(-50%, -22px); }
+  .gn.comp .ico { width: 44px; height: 44px; }
+  .gn.core .ico { border-color: #8f6ea0; box-shadow: 0 0 0 3px rgba(242,184,230,.07), 0 4px 16px rgba(0,0,0,.45); }
+  .glegend { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 4px; flex-wrap: wrap; gap: 8px; }
+
+  /* ---------- situational ---------- */
+  .sitgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 8px; }
+  @media (max-width: 900px) { .sitgrid { grid-template-columns: 1fr; } }
+  .sit { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .sit h3 { margin: 0 0 4px; font-size: 14px; color: var(--accent); }
+  .sit p { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  .sitem { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+  .sitem .t { font-size: 13px; }
+  .sitem .s { font-size: 11px; color: var(--muted); }
+
+  /* ---------- runes ---------- */
+  .rpanel { display: grid; grid-template-columns: auto auto minmax(220px, 1fr); gap: 28px; padding: 22px; align-items: start; }
+  @media (max-width: 900px) { .rpanel { grid-template-columns: 1fr; } }
+  .rt { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .rt .tname { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--muted); align-self: flex-start; }
+  .rt .tname img { width: 18px; height: 18px; }
+  .rrow { display: flex; gap: 14px; justify-content: center; align-items: center; }
+  .rune { width: 40px; height: 40px; border-radius: 50%; position: relative; display: grid; place-items: center; flex: none; }
+  .rune img { width: 100%; height: 100%; border-radius: 50%; position: relative; }
+  .rune .fb { position: absolute; font-size: 9px; color: var(--muted); }
+  .rune.off { filter: grayscale(1); opacity: .28; }
+  .rune.on { box-shadow: 0 0 0 2px var(--accent), 0 0 14px rgba(242,184,230,.35); background: var(--panel3); }
+  .rrow.keys .rune { width: 50px; height: 50px; }
+  .rrow.keys .rune.on { width: 60px; height: 60px; }
+  .divider { height: 1px; background: var(--line); width: 100%; }
+  .shrow { display: flex; gap: 18px; justify-content: center; }
+  .shrow .rune { width: 24px; height: 24px; }
+  .rcards { display: flex; flex-direction: column; gap: 12px; }
+  .rcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .rcard h4 { display: flex; align-items: center; gap: 9px; margin: 0 0 6px; font-size: 14px; }
+  .rcard h4 img { width: 26px; height: 26px; border-radius: 50%; }
+  .rcard p { margin: 0; font-size: 12px; color: var(--muted); }
+
+  /* ---------- skills ---------- */
+  .spanel { padding: 20px; display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start; }
+  .spell { display: flex; align-items: center; gap: 9px; font-size: 13px; margin-bottom: 8px; }
+  .maxo { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 12px; color: var(--muted); }
+  .key { display: inline-grid; place-items: center; width: 28px; height: 28px; background: var(--panel3); border: 1px solid var(--line2); border-radius: 7px; font-weight: 800; color: var(--text); }
+  .key.first { background: #4a3555; color: var(--accent); border-color: #8f6ea0; }
+  .sgrid-wrap { overflow-x: auto; }
+  .sgrid { display: grid; grid-template-columns: 22px repeat(18, 24px); gap: 3px; min-width: max-content; }
+  .sgrid div { height: 24px; display: grid; place-items: center; font-size: 10px; border-radius: 5px; }
+  .sgrid .l { font-weight: 800; color: var(--muted); }
+  .sgrid .c { background: var(--panel2); }
+  .sgrid .c.on { background: #5b4168; color: var(--text); font-weight: 700; }
+  .sgrid .c.on.R { background: var(--accent); color: #2a1029; }
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <div class="brand"><img src="/logo.png" alt="" onerror="this.remove()">Jam's League Builds</div>
+  <div class="field"><span>Role</span><div class="seg" id="roleSeg"></div><select id="role" hidden></select></div>
+  <div class="field"><span>Champion</span><select id="champion"></select></div>
+  <div class="field"><span>Region</span><select id="region"></select></div>
+  <div class="field"><span>Patch</span><select id="patch"></select></div>
+  <label class="chk"><input type="checkbox" id="allChamps"> All champions</label>
+  <button class="go" id="go" disabled onclick="search()">Search</button>
+</div></div>
+
+<div class="page">
+  <nav class="side" id="nav"></nav>
+  <div id="out"><div class="msg">Loading champion list...</div></div>
+</div>
+
+<script>
+let META = null, LAST = null, TAB = "main";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DD = () => `https://ddragon.leagueoflegends.com/cdn/${META.version}`;
+const itemImg = id => `${DD()}/img/item/${id}.png`;
+const runeImg = p => p ? `https://ddragon.leagueoflegends.com/cdn/img/${p}` : "";
+const shardImg = f => f ? `https://ddragon.leagueoflegends.com/cdn/img/perk-images/StatMods/${f}` : "";
+const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+const abbr = n => String(n || "?").split(/[\s']+/).filter(Boolean).map(w => w[0]).join("").slice(0, 3).toUpperCase();
+
+// Icon box; if the picture can't load it shows initials, so the layout never breaks.
+function ico(src, name, cls = "", style = "") {
+  return `<div class="ico ${cls}" title="${esc(name)}" ${style ? `style="${style}"` : ""}><span class="fb">${esc(abbr(name))}</span>` +
+         (src ? `<img src="${esc(src)}" alt="${esc(name)}" onerror="this.remove()">` : "") + `</div>`;
+}
+const itemIco = (it, cls = "") => ico(itemImg(it.id), it.name + (it.gold ? ` (${it.gold}g)` : ""), cls);
+
+async function api(path) { const r = await fetch(path); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }
+function msg(html, err) { $("nav").innerHTML = ""; $("out").innerHTML = `<div class="msg${err ? " err" : ""}">${html}</div>`; }
+
+async function init() {
+  try { META = await api("/api/meta"); }
+  catch (e) { return msg(`Couldn't load the champion list (${esc(e.message)}). Is the app still running? <button onclick="location.reload()">Retry</button>`, true); }
+  if (META.error) return msg(`${esc(META.error)} <button onclick="location.reload()">Retry</button>`, true);
+  $("role").innerHTML = META.roles.map(r => `<option value="${r.id}">${esc(r.label)}</option>`).join("");
+  $("region").innerHTML = META.regions.map(r => `<option value="${r.id}">${esc(r.label)}</option>`).join("");
+  $("patch").innerHTML = META.patches.map((p, i) => `<option value="${p.id}">${esc(p.label)} (${i === 0 ? "current" : "previous"})</option>`).join("");
+  for (const k of ["role", "region", "patch"]) { const v = store("lbf_" + k); if (v && [...$(k).options].some(o => o.value === v)) $(k).value = v; }
+  const short = { adc: "Bot" };
+  $("roleSeg").innerHTML = META.roles.map(r => `<button type="button" data-r="${r.id}">${esc(short[r.id] || r.label)}</button>`).join("");
+  $("roleSeg").onclick = e => { const b = e.target.closest("button"); if (b) { $("role").value = b.dataset.r; syncRole(); fillChampions($("champion").value); } };
+  syncRole();
+  if (!META.role_filter) { $("allChamps").checked = true; $("allChamps").disabled = true; }
+  fillChampions(store("lbf_champion"));
+  $("allChamps").onchange = () => fillChampions($("champion").value);
+  $("champion").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
+  $("go").disabled = false;
+  msg(`Pick a role and a champion, then hit <b>Search</b>.${META.note ? "<br>" + esc(META.note) : ""}`);
+}
+function syncRole() { for (const b of $("roleSeg").children) b.classList.toggle("on", b.dataset.r === $("role").value); }
+function fillChampions(keep) {
+  const role = $("role").value, all = $("allChamps").checked;
+  const list = META.champions.filter(c => all || c.roles.includes(role));
+  $("champion").innerHTML = list.map(c => `<option value="${c.key}">${esc(c.name)}</option>`).join("") || `<option value="">(none)</option>`;
+  if (keep && list.some(c => c.key === keep)) $("champion").value = keep;
+}
+
+async function search() {
+  const q = { role: $("role").value, champion: $("champion").value, region: $("region").value, patch: $("patch").value };
+  if (!q.champion) return;
+  for (const k in q) store("lbf_" + k, q[k]);
+  $("go").disabled = true; $("go").textContent = "Searching...";
+  msg("Fetching stats...");
+  try { LAST = await api("/api/build?" + new URLSearchParams(q)); render(LAST); }
+  catch (e) { msg(`Search failed (${esc(e.message)}). Is the app still running?`, true); }
+  finally { $("go").disabled = false; $("go").textContent = "Search"; }
+}
+
+// ---------------------------------------------------------------- sections
+
+function header(r) {
+  const c = r.champion;
+  let h = `<div class="head" id="s-top"><div class="portrait">${ico(`${DD()}/img/champion/${c.image}`, c.name, "", "width:100%;height:100%;border:0;border-radius:0;box-shadow:none")}</div><div>
+    <div class="kicker">${esc(r.rank)} build · ${esc(r.region)} · Patch ${esc(r.patch)}</div>
+    <h1>${esc(c.name)} ${esc(r.role)} Build</h1>
+    <div class="subl"><b>${r.winrate != null ? r.winrate + "%" : "?"}</b> win rate over <b>${r.games.toLocaleString()}</b> games`;
+  if (r.core && r.core.share != null) h += ` · core build in <b>${r.core.share}%</b> of games, <b>${r.core.winrate}%</b> WR`;
+  h += ` · <a href="${esc(r.source_url)}" target="_blank" rel="noopener">u.gg ↗</a></div></div></div>`;
+  if (r.fallback) h += `<div class="flag">Showing the default most played build: no 3-item core wins over ${r.rule.min_winrate}% of games while appearing in at least ${r.rule.min_share}% of ${esc(c.name)}'s games with ${Number(r.rule.min_games).toLocaleString()}+ games played.</div>`;
+  if (r.warnings && r.warnings.length) h += `<div class="note">${r.warnings.map(esc).join("<br>")}</div>`;
+  return h;
+}
+
+function strip(r) {
+  let h = `<div class="strip">`;
+  h += `<div><div class="lbl">Starting</div><div class="icons">${(r.starting?.items || []).map(i => itemIco(i)).join("") || `<span class="tiny">No data</span>`}</div></div>`;
+  h += `<div><div class="lbl">Boots</div>`;
+  if (r.boots) {
+    h += `<div class="icons">${itemIco(r.boots.base)}<span class="gt">›</span>${r.boots.options.map(i => itemIco(i)).join("")}</div>
+          <div class="tiny">First one is the usual pick${r.boots.options.length > 1 ? "; the others are common swaps" : ""}. Usually finished after item ${Math.max(1, r.boots.after_item)}.</div>`;
+  } else h += `<div class="tiny">None</div>`;
+  h += `</div><div><div class="lbl">First back</div>`;
+  const f = r.first_item;
+  if (f && f.components.length) {
+    const withSubs = f.components.find(c => c.subparts.length);
+    h += `<div class="icons">${f.components.map((c, n) => `<div class="numwrap"><span class="num">${n + 1}</span>${itemIco(c)}</div>`).join("")}<span class="gt">›</span>${itemIco(f.item)}</div>
+          <div class="tiny">Buy in this order toward ${esc(f.item.name)}.${withSubs ? ` Short on gold? Start with ${esc([...new Set(withSubs.subparts.map(s => s.name))].join(" or "))}.` : ""}</div>`;
+  } else h += `<div class="tiny">No data</div>`;
+  return h + `</div></div>`;
+}
+
+function graph(r) {
+  const build = r.build || [];
+  if (!build.length) return `<div class="tiny" style="padding:20px">No item data.</div>`;
+  const comps = [];  // components live in the First back strip, not the flow chart
+  const sit = (r.situational?.groups || []).map(g => ({ g, it: g.items[0] })).filter(x => x.it);
+  const hasL = comps.length > 0;
+  const xs = hasL ? [8, 30, 52, 74] : [10, 34, 58, 82];
+  const xR = 93, H = 380, mid = 175;
+  const spread = (n, gap) => Array.from({ length: n }, (_, i) => mid + (i - (n - 1) / 2) * gap);
+  const nodes = [], links = [];
+  const cy = spread(comps.length, 120);
+  comps.forEach((c, i) => {
+    nodes.push({ x: xs[0], y: cy[i], cls: "comp", html: `<div class="numwrap"><span class="num">${i + 1}</span>${itemIco(c)}</div><div class="nm">${esc(c.name)}</div><div class="sub">${c.gold}g</div>` });
+  });
+  const core = build.map((it, i) => ({ x: xs[i + (hasL ? 1 : 0)], y: mid, cls: "core", html: `${itemIco(it)}<div class="nm">${esc(it.name)}</div><div class="sub">Item ${it.slot} · ${it.gold}g</div>` }));
+  nodes.push(...core);
+  comps.forEach((c, i) => links.push([xs[0], cy[i], core[0].x, mid]));
+  for (let i = 1; i < core.length; i++) links.push([core[i - 1].x, mid, core[i].x, mid]);
+  const last = core[core.length - 1], rx = Math.max(xR, last.x + 12) > 96 ? 96 : Math.max(xR, last.x + 12);
+  const ry = spread(sit.length, 125);
+  sit.forEach((s, i) => {
+    nodes.push({ x: rx, y: ry[i], cls: "", html: `<span class="cat">${esc(s.g.label)}</span>${itemIco(s.it)}<div class="nm">${esc(s.it.name)}</div>` });
+    links.push([last.x, mid, rx, ry[i]]);
+  });
+  // Curves live in a 100-wide box (x = % of width) so they stretch with the window.
+  const paths = links.map(([x1, y1, x2, y2]) => { const xm = (x1 + x2) / 2; return `<path d="M${x1} ${y1} C${xm} ${y1} ${xm} ${y2} ${x2} ${y2}"/>`; }).join("");
+  let h = `<div class="gwrap"><div class="graph"><svg viewBox="0 0 100 ${H}" preserveAspectRatio="none">${paths}</svg>`;
+  h += nodes.map(n => `<div class="gn ${n.cls}" style="left:${n.x}%;top:${n.y}px">${n.html}</div>`).join("");
+  h += `</div></div><div class="glegend"><span>Core items in buy order</span><span>${sit.length ? "Right: next item by enemy team (Situational tab)" : ""}</span></div>`;
+  return h;
+}
+
+function situational(r) {
+  const s = r.situational;
+  if (!s) return `<div class="tiny">No data.</div>`;
+  return `<div class="sitgrid">${s.groups.map(g => `<div class="sit"><h3>${esc(g.label)}</h3><p>${esc(g.why)}</p>` +
+    (g.items.length ? g.items.map(it => `<div class="sitem">${itemIco(it, "sm")}<div><div class="t">${esc(it.name)}</div><div class="s">${it.source === "stats" ? `${esc(LAST.rank)} pick${it.winrate != null ? ` · ${it.winrate}% WR · ${Number(it.games).toLocaleString()} games` : ""}` : "Standard option for this build"}</div></div></div>`).join("")
+      : `<div class="s" style="color:var(--muted);font-size:12px">Nothing fits for this champion.</div>`) + `</div>`).join("")}</div>`;
+}
+
+function buildSection(r) {
+  return `<h2 class="sec" id="s-build">The Build</h2><div class="panel">${strip(r)}
+    <div class="tabs"><button data-t="main" class="${TAB === "main" ? "on" : ""}">Main Build</button><button data-t="sit" class="${TAB === "sit" ? "on" : ""}">Situational</button></div>
+    <div class="tabbody" id="tabbody">${TAB === "main" ? graph(r) : situational(r)}</div></div>`;
+}
+
+function runeSection(ru) {
+  let h = `<h2 class="sec" id="s-runes">The Runes</h2><div class="panel">`;
+  if (!ru) return h + `<div class="tiny" style="padding:20px">No rune data.</div></div>`;
+  const circ = (p, src) => `<div class="rune ${p.on ? "on" : "off"}" title="${esc(p.name)}"><span class="fb">${esc(abbr(p.name))}</span>${src ? `<img src="${esc(src)}" alt="" onerror="this.remove()">` : ""}</div>`;
+  const rune = p => circ(p, runeImg(p.icon)), shard = p => circ(p, shardImg(p.icon));
+  const tname = t => `<div class="tname">${t.icon ? `<img src="${esc(runeImg(t.icon))}" alt="" onerror="this.remove()">` : ""}${esc(t.name)}</div>`;
+  const prim = ru.primary_slots && ru.primary_slots.length ? ru.primary_slots : [[{ ...ru.keystone, on: true }], ...ru.primary.map(p => [{ ...p, on: true }])];
+  const sub = ru.sub_slots && ru.sub_slots.length ? ru.sub_slots : ru.secondary.map(p => [{ ...p, on: true }]);
+  h += `<div class="rpanel"><div class="rt">${tname(ru.primary_tree)}${prim.map((row, i) => `<div class="rrow${i === 0 ? " keys" : ""}">${row.filter(p => p && p.name).map(rune).join("")}</div>`).join("")}</div>`;
+  h += `<div class="rt">${tname(ru.sub_tree)}${sub.map(row => `<div class="rrow">${row.map(rune).join("")}</div>`).join("")}`;
+  if (ru.shard_rows) h += `<div class="divider"></div>${ru.shard_rows.map(row => `<div class="shrow">${row.map(shard).join("")}</div>`).join("")}`;
+  h += `</div><div class="rcards">`;
+  if (ru.keystone) h += `<div class="rcard"><h4>${ru.keystone.icon ? `<img src="${esc(runeImg(ru.keystone.icon))}" alt="" onerror="this.remove()">` : ""}${esc(ru.keystone.name)}</h4><p>${esc(ru.keystone.desc || "")}</p></div>`;
+  h += `<div class="rcard"><h4>${ru.sub_tree.icon ? `<img src="${esc(runeImg(ru.sub_tree.icon))}" alt="" onerror="this.remove()">` : ""}${esc(ru.sub_tree.name)} secondary</h4><p>${esc(ru.secondary.map(p => p.name).join(" + "))}${ru.shards ? `. Shards: ${esc(ru.shards.map(s => s.name).join(", "))}` : ""}.</p></div>`;
+  h += `<div class="rcard"><h4>How often</h4><p>${ru.winrate != null ? `${ru.winrate}% win rate · ` : ""}${Math.round(ru.games).toLocaleString()} ${esc(LAST.rank)} games with this exact page.</p></div>`;
+  return h + `</div></div></div>`;
+}
+
+function skillSection(r) {
+  let h = `<h2 class="sec" id="s-skills">Spells &amp; Skill Order</h2><div class="panel"><div class="spanel">`;
+  if (r.spells) h += `<div>${r.spells.map(s => `<div class="spell">${ico(s.image ? `${DD()}/img/spell/${s.image}` : "", s.name, "sm")}<span>${esc(s.name)}</span></div>`).join("")}</div>`;
+  if (r.skills) {
+    h += `<div style="min-width:0;flex:1">`;
+    if (r.skills.priority) h += `<div class="maxo">Max first ${r.skills.priority.split("").map((k, i) => `${i ? "›" : ""}<span class="key${i === 0 ? " first" : ""}">${esc(k)}</span>`).join("")}</div>`;
+    const ord = r.skills.order || [];
+    if (ord.length) {
+      h += `<div class="sgrid-wrap"><div class="sgrid">`;
+      for (const k of ["Q", "W", "E", "R"]) {
+        h += `<div class="l">${k}</div>`;
+        for (let lv = 0; lv < 18; lv++) h += `<div class="c${ord[lv] === k ? " on " + k : ""}">${ord[lv] === k ? lv + 1 : ""}</div>`;
+      }
+      h += `</div></div>`;
+    }
+    h += `</div>`;
+  }
+  return h + `</div></div>`;
+}
+
+function render(r) {
+  if (r.error) return msg(`${esc(r.error)}${r.detail ? `<details><summary>Technical detail</summary>${esc(r.detail)}</details>` : ""}`, true);
+  $("out").innerHTML = header(r) + buildSection(r) + runeSection(r.runes) + skillSection(r);
+  $("nav").innerHTML = [["s-top", "Overview"], ["s-build", "The Build"], ["s-sit", "Situational"], ["s-runes", "The Runes"], ["s-skills", "Spells & Skills"]]
+    .map(([id, t]) => `<a data-go="${id}">${t}</a>`).join("");
+  for (const b of document.querySelectorAll(".tabs button")) b.onclick = () => setTab(b.dataset.t);
+  for (const a of $("nav").querySelectorAll("a")) a.onclick = () => {
+    const go = a.dataset.go;
+    if (go === "s-sit" || go === "s-build") setTab(go === "s-sit" ? "sit" : "main");
+    document.getElementById(go === "s-sit" ? "s-build" : go).scrollIntoView();
+  };
+  spy();
+}
+function setTab(t) {
+  TAB = t;
+  for (const b of document.querySelectorAll(".tabs button")) b.classList.toggle("on", b.dataset.t === t);
+  $("tabbody").innerHTML = t === "main" ? graph(LAST) : situational(LAST);
+  spy();
+}
+function spy() {
+  let cur = "s-top";
+  for (const id of ["s-top", "s-build", "s-runes", "s-skills"]) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 160) cur = id; }
+  if (cur === "s-build" && TAB === "sit") cur = "s-sit";
+  for (const a of $("nav").querySelectorAll("a")) a.classList.toggle("on", a.dataset.go === cur);
+}
+window.addEventListener("scroll", () => { if (LAST && !LAST.error) spy(); }, { passive: true });
+
+init();
+// Lets the desktop launcher know the window is still open.
+setInterval(() => fetch('/api/ping').catch(() => {}), 10000);
+fetch('/api/ping').catch(() => {});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "_note": "Optional tweaks. Delete this file to go back to the defaults built into app.py.",
+  "port": 8766,
+  "low_sample_games": 200,
+  "min_winrate": 50.0,
+  "min_pick_share": 0.10,
+  "min_build_games": 1000,
+  "min_situational_games": 100,
+  "role_min_pick_rate": 0.002,
+  "stats_cache_hours": 6,
+  "ugg_api_version": "1.5.0",
+  "ugg_rank_key": "10",
+  "ugg_rank_name": "platinum_plus",
+  "rank_label": "Platinum+"
+}
