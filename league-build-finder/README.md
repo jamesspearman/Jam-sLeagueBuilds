@@ -9,14 +9,7 @@ Pick a **role**, a **champion**, a **region** and a **patch**, click **Search**,
 
 Runs locally on your PC in your browser. Nothing to log in to.
 
-## Setup on Windows (one time)
-
-1. Install **Python 3.9 or newer** if you don't have it (you do if the Nidalee app worked). In PowerShell: `winget install Python.Python.3.12`, or from python.org with **"Add python.exe to PATH"** ticked.
-2. Put this folder anywhere, e.g. `Documents\league-build-finder`.
-
-No other installs. It uses Python's built-in libraries and the `curl` that ships with Windows 10/11.
-
-## Make the single .exe (for you and friends)
+## How to download and launch
 
 1. Double-click **`build_exe.bat`** (needs Python on your PC, only for this step). It takes about a minute.
 2. You get **`Jam's League Builds.exe`** in this folder. That one file is the whole app: friends don't need Python or anything else. Windows 10/11 already has the Edge engine it uses for its window.
@@ -24,28 +17,9 @@ No other installs. It uses Python's built-in libraries and the `curl` that ships
 
 The .exe keeps its downloaded data in `%LOCALAPPDATA%\JamsLeagueBuilds`, so it can live anywhere (Desktop, Downloads...). An optional `settings.json` placed next to the .exe is picked up too.
 
-**About the publisher name.** The file's details (right-click > Properties > Details) say **Spearman**, "Jam's League Builds", version 1.0.0, with the app icon. It doesn't ask for admin rights, so there's no "allow changes to your device" prompt. But when a friend runs a downloaded .exe, Windows SmartScreen shows a blue "Windows protected your PC" box with **Publisher: Unknown publisher**; they click **More info > Run anyway** once. Windows only shows a publisher name there for programs signed with a paid code-signing certificate (identity-verified, roughly $10/month with Microsoft's Trusted Signing or $100+/year elsewhere). Some antivirus tools also flag unsigned Python-made .exe files by mistake.
-
-## Install it as a desktop app (recommended)
-
-1. Put this folder where you want to keep it, e.g. `Documents\league-build-finder` (the shortcuts point here, so don't delete or move it afterwards; if you do move it, run step 2 again).
-2. Double-click **`install.bat`**. It adds a **League Build Finder** icon to your Desktop and Start Menu.
-3. Click the icon. The app opens in its own window (no tabs or address bar, no black console window).
-4. Close the window to quit. The background part shuts itself down a few seconds later.
-
-Tip: right-click the Start Menu entry and choose **Pin to taskbar**.
-
-The window uses Microsoft Edge's "app mode" (Edge comes with Windows) with its own separate profile, so it doesn't touch your normal browser. If Edge isn't found it uses Chrome, and failing that, opens in your normal browser (in that case the app stops by itself a few minutes after you close the tab). Clicking the icon while it's already open just opens another window.
-
-To remove the shortcuts, double-click **`uninstall.bat`**.
-
 ## Using it
 
 Choose Role, then Champion (the list only shows champions actually played in that role; tick **List every champion** to see them all), then Region and Patch, and click **Search**.
-
-`start.bat` still works too if you prefer the old way: it runs the app with a visible console window, which is handy for troubleshooting.
-
-The first run downloads Riot's champion/item data (~3 MB). Each champion's stats are then cached for 6 hours in `cache/`, so repeat searches are instant, and if you're offline it falls back to the last copy it downloaded.
 
 ## What a search shows
 
